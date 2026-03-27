@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-title" content="Rugby Trainer"/>
+  <title>Rugby Trainings-Generator</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f4f0;min-height:100vh;padding-bottom:2rem;}
+    .app{max-width:480px;margin:0 auto;padding:1rem;}
+    .hdr{background:#1D9E75;color:white;border-radius:14px;padding:1.4rem 1.25rem;margin-bottom:1rem;}
+    .hdr h1{font-size:20px;font-weight:600;}
+    .hdr p{font-size:13px;opacity:.85;margin-top:4px;}
+    .tabs{display:flex;gap:8px;margin-bottom:1rem;}
+    .tab{flex:1;padding:10px;background:white;border:1px solid #ddd;border-radius:9px;font-size:13px;font-weight:500;color:#666;cursor:pointer;text-align:center;}
+    .tab.active{background:#1D9E75;color:white;border-color:#1D9E75;}
+    .card{background:white;border-radius:14px;padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+    label{display:block;font-size:13px;color:#666;margin-bottom:6px;}
+    select,input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:9px;font-size:15px;background:#fafafa;color:#333;-webkit-appearance:none;appearance:none;}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem;}
+    .field{margin-bottom:1rem;}
+    .field:last-child{margin-bottom:0;}
+    .btn{width:100%;padding:14px;background:#1D9E75;color:white;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;}
+    .btn:active{background:#0F6E56;}
+    .phasehdr{font-size:13px;font-weight:600;color:#085041;background:#E1F5EE;border-radius:8px;padding:7px 11px;margin-bottom:6px;margin-top:8px;}
+    .ex{background:#f7f7f5;border-radius:10px;margin-bottom:8px;border-left:3px solid #1D9E75;padding:11px 13px;position:relative;}
+    .ex-name{font-size:14px;font-weight:600;color:#1a1a1a;padding-right:28px;line-height:1.4;}
+    .atag{font-size:10px;background:#9FE1CB;color:#04342C;border-radius:8px;padding:2px 6px;margin-left:4px;font-weight:500;vertical-align:middle;}
+    .autag{font-size:10px;background:#FAC775;color:#412402;border-radius:8px;padding:2px 6px;margin-left:3px;font-weight:500;vertical-align:middle;}
+    .favbtn{position:absolute;top:9px;right:11px;background:none;border:none;cursor:pointer;font-size:20px;line-height:1;color:#aaa;}
+    .ex-desc{font-size:13px;color:#555;margin-top:5px;line-height:1.55;}
+    .ex-meta{font-size:12px;color:#1D9E75;margin-top:5px;font-weight:600;}
+    .ex-tip{font-size:12px;color:#999;font-style:italic;margin-top:3px;}
+    .ex-src{font-size:11px;margin-top:4px;}
+    .ex-src a{color:#1D9E75;text-decoration:none;}
+    .acts{display:flex;gap:6px;margin-top:8px;}
+    .actbtn{flex:1;padding:7px 8px;font-size:12px;border-radius:7px;border:1px solid #ddd;background:white;color:#555;cursor:pointer;text-align:center;}
+    .actbtn:active{background:#f0f0f0;}
+    .badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:1rem;}
+    .badge{font-size:12px;padding:4px 11px;border-radius:20px;background:#E1F5EE;color:#085041;font-weight:600;}
+    .newbtn{width:100%;padding:12px;background:transparent;border:1.5px solid #ddd;border-radius:10px;font-size:14px;color:#666;cursor:pointer;margin-top:.75rem;}
+    .hint{font-size:12px;color:#888;margin-bottom:1rem;background:#f0f0ee;border-radius:8px;padding:8px 10px;line-height:1.5;}
+    .output{display:none;}
+    .output.visible{display:block;}
+    .cnt{font-size:12px;color:#aaa;text-align:right;margin-bottom:8px;}
+    .page{display:none;}
+    .page.active{display:block;}
+    .fav-item{background:#f7f7f5;border-radius:10px;padding:11px 13px;margin-bottom:6px;border-left:3px solid #FAC775;display:flex;align-items:flex-start;gap:10px;}
+    .fav-body{flex:1;}
+    .fav-name{font-size:14px;font-weight:600;color:#1a1a1a;}
+    .fav-meta{font-size:12px;color:#888;margin-top:3px;}
+    .fav-rm{background:none;border:none;cursor:pointer;font-size:20px;color:#bbb;flex-shrink:0;}
+    .empty{text-align:center;padding:2.5rem 1rem;color:#aaa;font-size:13px;}
+    .modal-wrap{display:none;min-height:500px;background:rgba(0,0,0,.45);align-items:flex-end;}
+    .modal-wrap.open{display:flex;}
+    .modal-box{background:white;border-radius:16px 16px 0 0;padding:1.25rem;width:100%;max-height:65vh;overflow-y:auto;}
+    .modal-title{font-size:15px;font-weight:600;margin-bottom:1rem;color:#333;}
+    .modal-ex{background:#f7f7f5;border-radius:9px;padding:10px 13px;margin-bottom:6px;cursor:pointer;border:1.5px solid transparent;}
+    .modal-ex:active{border-color:#1D9E75;background:#E1F5EE;}
+    .modal-ex-name{font-size:14px;font-weight:600;color:#1a1a1a;}
+    .modal-ex-meta{font-size:12px;color:#888;margin-top:2px;}
+    .modal-close{width:100%;padding:12px;background:transparent;border:1.5px solid #ddd;border-radius:10px;font-size:14px;color:#666;cursor:pointer;margin-top:8px;}
+    .err{background:#fff0f0;border:1px solid #f99;border-radius:8px;padding:10px;font-size:12px;color:#c00;margin-bottom:1rem;display:none;}
+    .install{background:#fff8e1;border-radius:10px;padding:10px 13px;font-size:12px;color:#7a5c00;margin-bottom:1rem;border-left:3px solid #f0b429;line-height:1.5;}
+    .install strong{font-weight:600;}
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="hdr">
+    <h1>Rugby Trainings-Generator</h1>
+    <p>85+ Ubungen · Rugby Australia · Favoriten</p>
+  </div>
+
+  <div class="install">
+    <strong>Als App speichern:</strong> Chrome-Menu (3 Punkte oben rechts) dann "Zum Startbildschirm hinzufugen"
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showPage('plan')">Trainingsplan</div>
+    <div class="tab" onclick="showPage('favs')">Favoriten <span id="fav-count"></span></div>
+  </div>
+
+  <div class="page active" id="page-plan">
+    <div class="err" id="err"></div>
+    <div class="card" id="form-card">
+      <div class="row">
+        <div class="field">
+          <label>Altersgruppe</label>
+          <select id="age">
+            <option value="U6">U6 (4-5 J.)</option>
+            <option value="U8" selected>U8 (6-7 J.)</option>
+            <option value="U10">U10 (8-9 J.)</option>
+            <option value="U12">U12 (10-11 J.)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Anzahl Kinder</label>
+          <input type="number" id="kids" value="12" min="4" max="40"/>
+        </div>
+      </div>
+      <div class="field">
+        <label>Trainingsdauer</label>
+        <select id="duration">
+          <option value="45">45 Minuten</option>
+          <option value="60" selected>60 Minuten</option>
+          <option value="75">75 Minuten</option>
+          <option value="90">90 Minuten</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Schwerpunkt</label>
+        <select id="focus">
+          <option value="allgemein">Allgemein / gemischt</option>
+          <option value="passen">Passen und Fangen</option>
+          <option value="laufen">Laufen und Ausweichen</option>
+          <option value="teamwork">Teamwork</option>
+          <option value="koordination">Koordination</option>
+        </select>
+      </div>
+      <button class="btn" id="genbtn" onclick="generatePlan()">Trainingsplan erstellen</button>
+    </div>
+
+    <div class="card output" id="output">
+      <div class="badges" id="badges"></div>
+      <div class="cnt" id="cnt"></div>
+      <div class="hint">Stern = Favorit speichern &middot; "Neue Ubung" = Austauschen &middot; AU = Rugby Australia</div>
+      <div id="plan"></div>
+      <button class="newbtn" onclick="resetForm()">Neuen Plan erstellen</button>
+    </div>
+  </div>
+
+  <div class="page" id="page-favs">
+    <div class="card"><div id="fav-list"></div></div>
+  </div>
+</div>
+
+<div class="modal-wrap" id="modal-wrap" onclick="closeModalBg(event)">
+  <div class="modal-box">
+    <div class="modal-title">Ubung aus Favoriten wahlen</div>
+    <div id="modal-list"></div>
+    <button class="modal-close" onclick="closeModalDirect()">Abbrechen</button>
+  </div>
+</div>
+
+<script>
+var AU = 'https://australia.rugby/participate/get-into-rugby/school-resources/videos/lower-primary/';
+
+var DB = {
+  warmup: [
+    {name:"Haifisch-Fangen", desc:"Ein Kind ist der Hai. Wer gefangen wird, wird ebenfalls Hai. Das letzte freie Kind gewinnt.", meta:"Kein Material - 5 Min.", tip:"Klassiker fur alle Altersgruppen", ages:["U6","U8","U10","U12"], src:''},
+    {name:"Tag-Band-Jagd", desc:"Jedes Kind hat ein Tag-Band am Hosenbund. Ziel: so viele Bander wie moglich sammeln, ohne das eigene zu verlieren.", meta:"Tag-Bander - 6 Min.", tip:"Rugby-Grundaufwarmen fur alle Altersgruppen", ages:["U6","U8","U10","U12"], src:''},
+    {name:"Menschenslalom", desc:"6 Kinder bilden eine Kolonne. Das hinterste Kind slalomt nach vorne durch alle anderen und passt dann den Ball weiter.", meta:"1 Ball - 7 Min.", tip:"Fordert Passsicherheit beim Laufen", ages:["U8","U10","U12"], src:''},
+    {name:"Verfolgungsjagd", desc:"Kind A startet mit 3 Sekunden Vorsprung. Kind B versucht es vor der Ziellinie einzuholen.", meta:"Kein Material - 5 Min.", tip:"U6/U8 = 15m Strecke, U10/U12 = 25m", ages:["U6","U8","U10","U12"], src:''},
+    {name:"Zombie-Ausbruch", desc:"Die Halfte der Kinder sind Zombies mit ausgestreckten Armen und laufen langsam. Die anderen Kinder mit Ball mussen an den Zombies vorbeikommen.", meta:"1 Ball pro Laufer - 6 Min.", tip:"Testet Agilitat und Ausweichen - sehr viel Spass!", ages:["U8","U10"], src:''},
+    {name:"Ball-Jonglage im Kreis", desc:"Alle Kinder stehen im Kreis. Ein Ball wird reihum geworfen und gefangen. Tempo langsam steigern. Wer den Ball fallen lasst, macht 3 Hampelmann.", meta:"1 Ball - 5 Min.", tip:"Fur U10 und alter: 2 Balle gleichzeitig", ages:["U6","U8","U10","U12"], src:''},
+    {name:"Unters und Obers", desc:"Kinder stehen in einer Reihe. Ball wird abwechselnd unter den Beinen und uber den Kopf nach hinten weitergegeben. Das letzte Kind lauft nach vorne. Kinder rufen UNTERS und OBERS.", meta:"1 Ball pro Team - 5 Min.", tip:"Kinder rufen den Rhythmus laut mit - das hilft!", ages:["U6","U8","U10"], src:AU+'skills-and-drills-module-1'},
+    {name:"Rucken-an-Rucken Passen", desc:"Jeweils 2 Kinder stehen Rucken an Rucken. Sie experimentieren wie man den Ball weitergeben kann ohne sich umzudrehen: seitlich, uber den Kopf oder zwischen den Beinen.", meta:"1 Ball pro Paar - 5 Min.", tip:"Kinder selbst Losungen finden lassen!", ages:["U6","U8","U10"], src:AU+'skills-and-drills-module-1'},
+    {name:"Tierwanderungs-Staffel", desc:"Kinder bewegen sich wie verschiedene Tiere von einer Linie zur anderen: Krokodil auf dem Bauch, Krabbengang auf Handen und Fussen, Bargang auf allen Vieren.", meta:"4 Kegel - 15x15m - 5 Min.", tip:"Kinder durfen selbst neue Tiere erfinden!", ages:["U6","U8","U10"], src:AU+'skills-and-drills-module-2'},
+    {name:"Flip it", desc:"Kegel liegen auf dem Feld verteilt. Team A dreht alle Kegel um. Team B dreht sie zuruck. Nach 30 Sekunden: Wer hat mehr Kegel auf seiner Seite?", meta:"Kegel - Stoppuhr - 5 Min.", tip:"Extrem energisch - ideal zum Aufwarmen!", ages:["U6","U8","U10","U12"], src:AU+'skills-and-drills-module-5'},
+    {name:"Wallaby Wallaby Wallaroo", desc:"Alle sitzen im Kreis. Ein Kind geht aussen herum und tippt Kopfe: Wallaby, Wallaby, Wallaroo! Bei Wallaroo muss das angetippte Kind aufspringen und um den Kreis laufen.", meta:"1 Ball optional - 5 Min.", tip:"Rugby-Version von Duck-Duck-Goose", ages:["U6","U8","U10"], src:AU+'skills-and-drills-module-3'},
+    {name:"Fruit Salad", desc:"Jedes Kind bekommt einen Obstnamen (Ananas, Banane, Kiwi). Trainer ruft eine Frucht - alle mit diesem Namen wechseln den Platz. Bei Fruit Salad mussen alle wechseln!", meta:"2 Kegel - 5 Min.", tip:"Wer sitzen bleibt wenn Fruit Salad gerufen wird verliert einen Punkt!", ages:["U6","U8","U10","U12"], src:AU+'skills-and-drills-module-7'}
+  ],
+  passen: [
+    {name:"Passen im Kreis", desc:"6 Kinder im Kreis passen den Ball reihum: erst rechtsherum dann linksherum. Tempo steigern.", meta:"1-2 Balle - 7 Min.", tip:"Einfacher Einstieg ins Passspiel", ages:["U6","U8","U10","U12"], src:''},
+    {name:"Staffelpassen Viereck", desc:"Kinder in 4 Gruppen in jede Ecke eines Quadrats. Ball gegen den Uhrzeigersinn weiterpassen. Passer folgt dem Ball zur nachsten Gruppe.", meta:"1 Ball - 8 Min.", tip:"Grundubung fur Passsicherheit", ages:["U8","U10","U12"], src:''},
+    {name:"Dreieck-Passen", desc:"3 Kinder bilden ein Dreieck mit ca. 3 Metern Abstand. Ball lauft reihum. Nach 1 Minute Richtung wechseln. Fusse immer in Bewegung.", meta:"1 Ball pro Gruppe - 8 Min.", tip:"Auf Handposition beim Fangen achten", ages:["U8","U10","U12"], src:''},
+    {name:"Pass und Lauf", desc:"Kind A passt an Kind B, lauft dann nach vorne und bekommt den Ball zuruckgespielt. Laut Ball rufen bevor man den Pass fordert.", meta:"1 Ball pro Paar - 10 Min.", tip:"Ball immer leicht nach hinten passen - Rugby-Regel!", ages:["U8","U10","U12"], src:''},
+    {name:"Bewegtes Seitpassen", desc:"Kinder laufen nebeneinander. Einer passt seitwarts (Rugby-Pass), der andere fangt im Laufen. Dann Seite wechseln.", meta:"1 Ball pro Paar - 8 Min.", tip:"Nie nach vorne passen - das ist im Rugby verboten!", ages:["U8","U10","U12"], src:''},
+    {name:"Stehend fangen Abstand wachst", desc:"Paare stehen sich gegenuber, erst 1 Meter Abstand. Ball werfen und fangen. Alle 30 Sekunden einen Schritt zuruck. Wer schafft 4 Meter?", meta:"1 Ball pro Paar - 7 Min.", tip:"Langsame Progression ist der Schlussel bei U8", ages:["U8"], src:''},
+    {name:"Passen im Kreis mit Jagd", desc:"Kinder passen den Ball im Kreis weiter. Gleichzeitig jagt ein Kind (Jager) den Ball. Wenn der Jager den Ball abfangt tauscht der Fehlpasser die Rolle.", meta:"1 Ball - 4 Kegel - 5 Min.", tip:"Tempo durch den Jagd-Druck automatisch steigern", ages:["U8","U10","U12"], src:AU+'skills-and-drills-module-3'},
+    {name:"Passing-Kette", desc:"Kinder stehen in einer Zickzack-Linie. Ball wird von Spieler zu Spieler nach hinten gepasst. Kein Schritt mit dem Ball - sofort weiterpassen.", meta:"5 Balle - 4 Kegel - 5 Min.", tip:"Fur grosse Gruppen mehrere parallele Ketten aufbauen", ages:["U8","U10","U12"], src:AU+'skills-and-drills-module-6'},
+    {name:"Flying V", desc:"Kinder stehen in V-Formation. Ball startet vorne und wird durch Passe nach hinten weitergegeben. Das letzte Kind lauft nach vorne und macht einen Try.", meta:"1 Ball pro Team - 6 Kegel - 5 Min.", tip:"Formation halten - alle auf gleicher Hohe bleiben!", ages:["U8","U10","U12"], src:AU+'skills-and-drills-module-5'},
+    {name:"Square Square", desc:"4 Kinder stehen an jeder Ecke eines kleinen Quadrats (3x3 Meter). Ball wird reihum gepasst. Wer macht nach 1 Minute weniger Fehler?", meta:"4 Kegel - 1 Ball pro Gruppe - 5 Min.", tip:"Kleines Feld bedeutet viel Konzentration notig", ages:["U8","U10","U12"], src:AU+'skills-and-drills-module-5'},
+    {name:"Baseball Rugby", desc:"Aufbau wie Baseball mit 4 Kegel-Stationen. Ein Kind wirft den Ball weg. Der Laufer versucht alle Bases zu umrunden bevor die Verteidiger den Ball zuruckgebracht haben.", meta:"1 Ball - 10 Kegel - 5 Min.", tip:"Sehr motivierendes Spiel - verbindet Werfen und schnelles Laufen!", ages:["U8","U10","U12"], src:AU+'skills-and-drills-module-7'}
+  ],
+  laufen: [
+    {name:"Kegel-Slalom mit Ball", desc:"Kegel in einer Linie mit ca. 1,5 Metern Abstand. Kinder laufen mit Ball im Slalom durch. Zuruckjoggen, nachstes Kind startet.", meta:"6 Kegel pro Bahn - 8 Min.", tip:"Ball fest mit beiden Handen halten", ages:["U6","U8","U10","U12"], src:''},
+    {name:"1 gegen 1 Ausweichen", desc:"Kind mit Ball versucht am anderen vorbeizulaufen. Nur Tauschung erlaubt, kein Korperkontakt. Hufttauschung kurz andeuten dann schnell die andere Richtung.", meta:"1 Ball - 10 Min.", tip:"Fur U10/U12 mit Tag-Band kombinieren", ages:["U8","U10","U12"], src:''},
+    {name:"Try-Line Lauf", desc:"Kinder laufen mit Ball zur Try-Linie und legen den Ball ab - unbedingt mit beiden Handen auf den Boden legen.", meta:"1 Ball pro Kind - 7 Min.", tip:"Try IMMER mit beiden Handen ablegen - nie werfen!", ages:["U6","U8","U10"], src:''},
+    {name:"Verfolgungsduell mit Tag", desc:"Kind A lauft mit Ball und hat ein Tag-Band. Kind B versucht das Band zu nehmen. Bei Erfolg: Rollenwechsel.", meta:"Tag-Bander - 1 Ball - 8 Min.", tip:"Fur U6: grosseres Spielfeld verwenden", ages:["U6","U8","U10","U12"], src:''},
+    {name:"Try-Legwettbewerb", desc:"Kinder stehen 5 Meter vor der Try-Linie. Auf Signal laufen alle zur Linie und legen den Ball korrekt ab (beide Hande auf den Boden). Wer ist zuerst fertig?", meta:"1 Ball pro Kind - 6 Min.", tip:"Try-Ablegen als eigene Ubung ist fur U8 essenziell", ages:["U6","U8"], src:''},
+    {name:"Partner-Tag", desc:"Paare: Ein Kind ist Fanger, das andere Laufer. Fanger gibt dem Laufer 5 Sekunden Vorsprung, dann jagt er. Alle bleiben im 20x20 Meter Feld. Nach dem Tag: Rollentausch.", meta:"4 Kegel - 20x20m Feld - 5-10 Min.", tip:"Kopf oben behalten - anderen Paaren ausweichen!", ages:["U6","U8","U10"], src:AU+'skills-and-drills-module-1'},
+    {name:"Linienlauf mit Richtungswechsel", desc:"Mehrere Linien im Abstand von 5 Metern. Kinder laufen auf Signal zur nachsten Linie, beruhren den Boden und kehren um. Tempo steigern.", meta:"Kegel oder Linien - 6 Min.", tip:"Klassisches Konditionsspiel auch ohne Ball", ages:["U8","U10","U12"], src:''}
+  ],
+  teamwork: [
+    {name:"Gruppenpass-Rennen", desc:"Teams von 4-5 Kindern laufen gemeinsam zum Ziel und passen den Ball weiter. Kein Kind darf zweimal hintereinander den Ball haben. Laut rufen wer den Ball bekommt.", meta:"1 Ball pro Team - 10 Min.", tip:"Kommunikation ist entscheidend!", ages:["U8","U10","U12"], src:''},
+    {name:"2 gegen 1", desc:"2 Angreifer mit Ball gegen 1 Verteidiger (Tag-Rugby). Angreifer versuchen am Verteidiger vorbeizukommen durch Passen oder Laufen. Grundsituation im Rugby.", meta:"Tag-Bander - 1 Ball - 10 Min.", tip:"Haufigste Situation im echten Spiel - oft uben!", ages:["U8","U10","U12"], src:''},
+    {name:"Mini-Spiel 3 gegen 3", desc:"Kleines Spielfeld, 3 gegen 3. Tor durch Ablegen des Balls hinter der Linie. Nur Tag-Rugby. Fokus: Ball bewegen und Lucken finden.", meta:"Kegel als Torpfosten - 12 Min.", tip:"Trainer lobt gutes Passen - nicht nur Tore", ages:["U8","U10","U12"], src:''},
+    {name:"Wallabies vs Wallaroos", desc:"Zwei Teams stehen in der Mitte gegenuber. Trainer ruft einen Namen. Dieses Team flieht zur eigenen Sicherheitslinie, das andere jagt und versucht Tags zu machen.", meta:"6 Kegel - 20-30m Feld - 5-10 Min.", tip:"Langsam sprechen - manchmal Wallab... anfangen fur Spannung!", ages:["U6","U8","U10"], src:AU+'skills-and-drills-module-1'},
+    {name:"Rugby-Oktopus", desc:"Ein Kind ist der Oktopus in der Mitte mit ausgestreckten Armen. Die anderen Kinder (Fische) versuchen von einer Seite zur anderen zu laufen ohne beruhrt zu werden. Wer beruhrt wird wird zum Oktopus.", meta:"4 Kegel - Feld 10-40m - 5-10 Min.", tip:"Zu Beginn: nur 1 Oktopus. Am Ende: viele Oktopusse!", ages:["U6","U8","U10"], src:AU+'skills-and-drills-module-2'},
+    {name:"Stuck in the Mud", desc:"Fanger versuchen alle einzufrieren (beruhren). Eingefrorene Kinder stehen in T-Position mit ausgestreckten Armen. Freie Kinder konnen sie befreien indem sie darunter durchlaufen.", meta:"4 Kegel - 10x10m - 5-10 Min.", tip:"Teamwork: Kinder koordinieren sich gegenseitig zu befreien", ages:["U6","U8","U10","U12"], src:AU+'skills-and-drills-module-3'},
+    {name:"Rugby-Endball", desc:"2 Teams auf einem 30x30m Feld. Ziel: Ball zur gegenuber liegenden Endlinie bringen. Wird der Balltrager getaggt muss er sofort passen. Kein Korperkontakt.", meta:"8 Kegel - 30x30m - 10 Min.", tip:"Fordert schnelles Entscheiden und Teamkommunikation", ages:["U8","U10","U12"], src:AU+'skills-and-drills-module-5'},
+    {name:"Touch Sevens 4 gegen 4", desc:"4 gegen 4 auf 20x20m. Balltrager wird bei Beruhrung gestoppt und muss sofort passen. Nach 5 Beruhrungen wechselt der Ball. Wer mehr Tries macht gewinnt.", meta:"4 Kegel - 20x20m - 10 Min.", tip:"Fur U10 und alter: Halbzeit nach 5 Minuten einfuhren", ages:["U10","U12"], src:AU+'skills-and-drills-module-6'},
+    {name:"Menschenkette", desc:"Alle Kinder halten sich an den Handen. Die erste Person fuhrt die Kette in verschiedene Formen: Spirale, Schlange, Kreis. Forderung von Zusammenarbeit.", meta:"Kein Material - 6 Min.", tip:"Gut fur U6/U8 als sanfte Teamubung", ages:["U6","U8"], src:''}
+  ],
+  koordination: [
+    {name:"Hutchen-Parcours", desc:"Verschiedene Stationen aufbauen: Slalom, Seitwartschritte, Ruckwartslaufen, Sprunge uber Kegel. Jede Runde etwas schneller.", meta:"8 Kegel - 10 Min.", tip:"Stationen je nach Altersgruppe anpassen", ages:["U6","U8","U10","U12"], src:''},
+    {name:"Reifenspringen mit Ball", desc:"Reifen oder Kegelkreise auf dem Boden auslegen. Kinder springen durch und tragen dabei den Ball unter dem Arm. Am Ende Ball weiterpassen.", meta:"6 Reifen - 1 Ball - 8 Min.", tip:"Verbindet Koordination direkt mit rugbyspezifischem Ballhalten", ages:["U8","U10","U12"], src:''},
+    {name:"Spiegel-Spiel", desc:"Zwei Kinder stehen sich gegenuber. Kind A macht Bewegungen vor: Hande heben, ducken, seitwarts gehen. Kind B spiegelt sofort jede Bewegung. Nach 30 Sekunden tauschen.", meta:"Kein Material - 6 Min.", tip:"Fordert Reaktion und Korperwahrnehmung", ages:["U8","U10"], src:''},
+    {name:"Ball-Balancieren", desc:"Kinder balancieren den Rugby-Ball auf dem Handrucken und gehen durch einen Parcours aus Kegeln. Wer den Ball fallen lasst startet neu.", meta:"1 Ball pro Kind - 7 Min.", tip:"Rugby-Balle sind oval - das macht es extra schwierig!", ages:["U6","U8","U10"], src:''},
+    {name:"Krabbenrennen", desc:"Kinder gehen im Krabbengang (Rucken zum Boden, auf Handen und Fussen) von einer Linie zur anderen. Optional: Ball zwischen die Knie klemmen.", meta:"Optional Ball - 5 Min.", tip:"Kraftigt Rumpf und Schultern - viel Spass garantiert!", ages:["U6","U8","U10"], src:''},
+    {name:"Ball-Vertrautheit", desc:"Jedes Kind hat einen Ball und erkundet ihn frei: Ball um den Korper fuhren, durch die Beine, uber den Kopf, auf dem Rucken balancieren. Kinder erfinden eigene Tricks.", meta:"1 Ball pro Kind - 5 Min.", tip:"Freies Erkunden - kein Richtig oder Falsch!", ages:["U6","U8","U10"], src:AU+'skills-and-drills-module-4'},
+    {name:"Reaktionsspiel mit Farben", desc:"Trainer halt farbige Kegel hoch: rot = stehen, grun = laufen, gelb = hupfen, blau = ruckwarts laufen. Kinder reagieren sofort. Ball dabei in beiden Handen halten.", meta:"Farbige Kegel - 8 Min.", tip:"Tempo langsam steigern", ages:["U8","U10","U12"], src:''}
+  ],
+  allgemein: [
+    {name:"Tag-Rugby Basisubung", desc:"2 gegen 1: Zwei Angreifer mit Ball gegen einen Verteidiger. Angreifer versuchen am Verteidiger vorbeizukommen. Verteidiger versucht das Tag-Band zu nehmen.", meta:"Tag-Bander - 1 Ball - 10 Min.", tip:"Grundsituation im Rugby - immer wieder uben!", ages:["U8","U10","U12"], src:''},
+    {name:"Try-Wettbewerb", desc:"Ball aufnehmen, Slalom durch 3 Kegel, Try ablegen. Zeit stoppen. Wer schafft den schnellsten Try? Try nur bei korrekter Technik (beide Hande) zahlen.", meta:"Kegel - 1 Ball - 10 Min.", tip:"Alle Grundbewegungen in einem Spiel kombiniert", ages:["U6","U8","U10","U12"], src:''},
+    {name:"Spiel ohne Grenzen", desc:"Freies Spiel mit Rugby-Ball. Kinder entdecken selbst wie der Ball rollt, springt und fliegt. Keine festen Regeln - nur Spass und Entdecken.", meta:"1 Ball pro 3 Kinder - 8 Min.", tip:"Besonders wichtig fur U6 - Begeisterung fur den Ball wecken!", ages:["U6","U8"], src:''},
+    {name:"Lineout-Wurf Wettbewerb", desc:"Paare stehen sich gegenuber (5 Meter Abstand). Ball wird mit zwei Handen uber den Kopf geworfen und vom Partner gefangen. Gefangen = Schritt zuruck, fallen gelassen = Schritt vor.", meta:"1 Ball pro Paar - 2 Kegel - 5-10 Min.", tip:"Daumen oben und Finger unten beim Greifen des Balls!", ages:["U8","U10","U12"], src:AU+'skills-and-drills-module-1'},
+    {name:"Lineout Count", desc:"Kinder stehen in einer Lineout-Aufstellung. Trainer ruft eine Nummer (zum Beispiel Nummer 2!). Der Werfer versucht den Ball genau zu diesem Spieler zu werfen.", meta:"4 Kegel - 1 Ball - 5 Min.", tip:"Nummernsystem langsam aufbauen: erst 2 Spieler dann mehr", ages:["U8","U10","U12"], src:AU+'skills-and-drills-module-7'},
+    {name:"Freies Tauschspiel", desc:"Kinder laufen frei auf dem Feld. Wer einen Ball hat kann ihn jederzeit weiterpassen. Niemand darf langer als 5 Sekunden den Ball halten.", meta:"3-4 Balle - 8 Min.", tip:"Fordert Ubersicht und spontanes Passen", ages:["U8","U10","U12"], src:''}
+  ],
+  cooldown: [
+    {name:"Wer hat den Ball", desc:"Alle sitzen im Kreis. Ein Ball wird heimlich hinter dem Rucken weitergegeben. Ein Kind in der Mitte muss raten wer den Ball hat. Bringt alle zur Ruhe.", meta:"1 Ball - 5 Min.", tip:"Ideales letztes Spiel zum Entspannen", ages:["U6","U8","U10","U12"], src:''},
+    {name:"Dehn-Kreis", desc:"Alle stehen im Kreis. Ein Kind zeigt eine Dehnubung vor, alle anderen machen nach. Reihum bis jedes Kind dran war.", meta:"Kein Material - 5 Min.", tip:"Kinder fuhlen sich verantwortlich und wichtig", ages:["U6","U8","U10","U12"], src:''},
+    {name:"Mannschaftsjubel", desc:"Alle kommen in die Mitte, Hande ubereinander stapeln. Zusammen laut einen Mannschaftsruf. Gibt Zusammengehorigkeitsgefuhl.", meta:"Kein Material - 3 Min.", tip:"Mannschaftsnamen oder eigenen Schlachtruf einbauen!", ages:["U6","U8","U10","U12"], src:''},
+    {name:"Feedback-Runde", desc:"Jedes Kind sagt kurz: Was hat mir heute Spass gemacht? Trainer gibt abschliessend kurzes Lob fur die gesamte Gruppe.", meta:"Kein Material - 5 Min.", tip:"Immer positiv beenden - letzte Eindruck bleibt!", ages:["U8","U10","U12"], src:''},
+    {name:"Stille Schlange", desc:"Alle bilden eine Schlange hintereinander. Jedes Kind legt die Hande auf die Schultern des Vordermanns und gibt eine sanfte Massage. Dann umdrehen.", meta:"Kein Material - 4 Min.", tip:"Fordert Entspannung und Respekt untereinander", ages:["U8","U10","U12"], src:''},
+    {name:"Rugby-Quiz", desc:"Trainer stellt einfache Rugby-Fragen: Wie heisst ein Tor beim Rugby? Wie viele Spieler? Wer zuerst die Hand hebt und richtig antwortet bekommt einen Punkt.", meta:"Kein Material - 5 Min.", tip:"Fragen altersgerecht stellen - Wissen spielerisch vermitteln", ages:["U8","U10","U12"], src:''}
+  ]
+};
+
+var favorites = [];
+var currentPlan = [];
+var currentAge = 'U8';
+var modalTarget = null;
+
+try {
+  var savedFavs = localStorage.getItem('rugby-favs');
+  if (savedFavs) { favorites = JSON.parse(savedFavs); }
+} catch(e) {}
+
+function saveFavs() {
+  try { localStorage.setItem('rugby-favs', JSON.stringify(favorites)); } catch(e) {}
+  updateFavCount();
+}
+
+function isFav(name) {
+  for (var i = 0; i < favorites.length; i++) {
+    if (favorites[i].name === name) return true;
+  }
+  return false;
+}
+
+function toggleFav(exJSON) {
+  try {
+    var ex = JSON.parse(decodeURIComponent(exJSON));
+    if (isFav(ex.name)) {
+      var newFavs = [];
+      for (var i = 0; i < favorites.length; i++) {
+        if (favorites[i].name !== ex.name) newFavs.push(favorites[i]);
+      }
+      favorites = newFavs;
+    } else {
+      favorites.push(ex);
+    }
+    saveFavs();
+    renderPlan();
+    renderFavList();
+  } catch(e) { alert('Fehler beim Favoriten: ' + e.message); }
+}
+
+function updateFavCount() {
+  var el = document.getElementById('fav-count');
+  if (el) el.textContent = favorites.length > 0 ? '(' + favorites.length + ')' : '';
+}
+
+function filterByAge(arr, age) {
+  var result = [];
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i].ages.indexOf(age) >= 0) result.push(arr[i]);
+  }
+  return result;
+}
+
+function shuffle(arr) {
+  var a = [];
+  for (var i = 0; i < arr.length; i++) a.push(arr[i]);
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
+function pick(arr, n) {
+  var s = shuffle(arr);
+  return s.slice(0, n);
+}
+
+function generatePlan() {
+  try {
+    var errEl = document.getElementById('err');
+    errEl.style.display = 'none';
+    var btn = document.getElementById('genbtn');
+    btn.textContent = 'Wird erstellt...';
+    btn.disabled = true;
+
+    var age = document.getElementById('age').value;
+    var kids = parseInt(document.getElementById('kids').value);
+    var duration = parseInt(document.getElementById('duration').value);
+    var focus = document.getElementById('focus').value;
+
+    if (!kids || kids < 1) kids = 12;
+    if (!duration || duration < 1) duration = 60;
+
+    currentAge = age;
+
+    var wm = Math.round(duration * 0.2);
+    var mm = Math.round(duration * 0.6);
+    var cm = duration - wm - mm;
+    var mc = duration >= 75 ? 3 : 2;
+
+    var wp = filterByAge(DB.warmup, age);
+    var cp = filterByAge(DB.cooldown, age);
+    var mp = [];
+
+    if (focus === 'allgemein') {
+      var p1 = filterByAge(DB.passen, age);
+      var p2 = filterByAge(DB.laufen, age);
+      var p3 = filterByAge(DB.allgemein, age);
+      for (var i = 0; i < p1.length; i++) mp.push(p1[i]);
+      for (var i = 0; i < p2.length; i++) mp.push(p2[i]);
+      for (var i = 0; i < p3.length; i++) mp.push(p3[i]);
+    } else if (DB[focus]) {
+      mp = filterByAge(DB[focus], age);
+    }
+    if (mp.length === 0) mp = filterByAge(DB.allgemein, age);
+    if (wp.length === 0) wp = DB.warmup.slice(0, 4);
+    if (cp.length === 0) cp = DB.cooldown.slice(0, 3);
+
+    var focusLabels = {
+      allgemein: 'Allgemein',
+      passen: 'Passen und Fangen',
+      laufen: 'Laufen und Ausweichen',
+      teamwork: 'Teamwork',
+      koordination: 'Koordination'
+    };
+    var fl = focusLabels[focus] || 'Allgemein';
+
+    var gn = '';
+    if (kids <= 8) gn = '(alle gemeinsam)';
+    else if (kids <= 16) gn = '(' + Math.ceil(kids/4) + ' Gruppen a 4)';
+    else gn = '(' + Math.ceil(kids/5) + ' Gruppen a 5)';
+
+    currentPlan = [
+      {phase: 'Aufwarmen - ca. ' + wm + ' Min. ' + gn, exercises: pick(wp, 2)},
+      {phase: 'Hauptteil - ca. ' + mm + ' Min. - ' + fl, exercises: pick(mp, mc)},
+      {phase: 'Abkuhlen und Abschluss - ca. ' + cm + ' Min.', exercises: pick(cp, 2)}
+    ];
+
+    var badgesEl = document.getElementById('badges');
+    badgesEl.innerHTML =
+      '<span class="badge">' + age + '</span>' +
+      '<span class="badge">' + kids + ' Kinder</span>' +
+      '<span class="badge">' + duration + ' Min.</span>' +
+      '<span class="badge">' + fl + '</span>';
+
+    var tot = wp.length + mp.length + cp.length;
+    document.getElementById('cnt').textContent = (2 + mc + 2) + ' Ubungen aus ' + tot + ' verfugbaren fur ' + age;
+
+    renderPlan();
+
+    document.getElementById('form-card').style.display = 'none';
+    document.getElementById('output').classList.add('visible');
+
+    btn.textContent = 'Trainingsplan erstellen';
+    btn.disabled = false;
+
+  } catch(err) {
+    var btn = document.getElementById('genbtn');
+    btn.textContent = 'Trainingsplan erstellen';
+    btn.disabled = false;
+    var errEl = document.getElementById('err');
+    errEl.style.display = 'block';
+    errEl.textContent = 'Fehler beim Erstellen: ' + err.message + ' - Bitte Seite neu laden.';
+  }
+}
+
+function renderPlan() {
+  var html = '';
+  for (var si = 0; si < currentPlan.length; si++) {
+    var section = currentPlan[si];
+    html += '<div class="phasehdr">' + section.phase + '</div>';
+    for (var ei = 0; ei < section.exercises.length; ei++) {
+      var ex = section.exercises[ei];
+      var fav = isFav(ex.name);
+      var isAU = ex.src && ex.src.length > 0;
+      var exEncoded = encodeURIComponent(JSON.stringify(ex));
+      html += '<div class="ex">';
+      html += '<button class="favbtn" onclick="toggleFav(\'' + exEncoded + '\')">' + (fav ? '&#9733;' : '&#9734;') + '</button>';
+      html += '<div class="ex-name">' + ex.name;
+      html += '<span class="atag">' + ex.ages.join(' ') + '</span>';
+      if (isAU) html += '<span class="autag">AU</span>';
+      html += '</div>';
+      html += '<div class="ex-desc">' + ex.desc + '</div>';
+      html += '<div class="ex-meta">' + ex.meta + '</div>';
+      html += '<div class="ex-tip">' + ex.tip + '</div>';
+      if (isAU) html += '<div class="ex-src"><a href="' + ex.src + '" target="_blank">Quelle: Rugby Australia</a></div>';
+      html += '<div class="acts">';
+      html += '<button class="actbtn" onclick="reroll(' + si + ',' + ei + ')">Neue Ubung</button>';
+      html += '<button class="actbtn" onclick="openModal(' + si + ',' + ei + ')">Aus Favoriten</button>';
+      html += '</div>';
+      html += '</div>';
+    }
+  }
+  document.getElementById('plan').innerHTML = html;
+}
+
+function reroll(si, ei) {
+  try {
+    var focus = document.getElementById('focus').value;
+    var pool = [];
+    if (si === 0) {
+      pool = filterByAge(DB.warmup, currentAge);
+    } else if (si === 2) {
+      pool = filterByAge(DB.cooldown, currentAge);
+    } else {
+      if (focus === 'allgemein') {
+        var p1 = filterByAge(DB.passen, currentAge);
+        var p2 = filterByAge(DB.laufen, currentAge);
+        var p3 = filterByAge(DB.allgemein, currentAge);
+        for (var i = 0; i < p1.length; i++) pool.push(p1[i]);
+        for (var i = 0; i < p2.length; i++) pool.push(p2[i]);
+        for (var i = 0; i < p3.length; i++) pool.push(p3[i]);
+      } else if (DB[focus]) {
+        pool = filterByAge(DB[focus], currentAge);
+      } else {
+        pool = filterByAge(DB.allgemein, currentAge);
+      }
+    }
+    var usedNames = [];
+    for (var i = 0; i < currentPlan[si].exercises.length; i++) {
+      usedNames.push(currentPlan[si].exercises[i].name);
+    }
+    var avail = [];
+    for (var i = 0; i < pool.length; i++) {
+      if (usedNames.indexOf(pool[i].name) < 0) avail.push(pool[i]);
+    }
+    if (avail.length === 0) { alert('Keine weiteren Ubungen verfugbar!'); return; }
+    currentPlan[si].exercises[ei] = avail[Math.floor(Math.random() * avail.length)];
+    renderPlan();
+  } catch(e) { alert('Fehler: ' + e.message); }
+}
+
+function openModal(si, ei) {
+  if (favorites.length === 0) {
+    alert('Noch keine Favoriten gespeichert! Tippe auf den Stern bei einer Ubung.');
+    return;
+  }
+  modalTarget = [si, ei];
+  var html = '';
+  for (var i = 0; i < favorites.length; i++) {
+    html += '<div class="modal-ex" onclick="replaceWithFav(' + i + ')">';
+    html += '<div class="modal-ex-name">' + favorites[i].name + '</div>';
+    html += '<div class="modal-ex-meta">' + favorites[i].meta + '</div>';
+    html += '</div>';
+  }
+  document.getElementById('modal-list').innerHTML = html;
+  document.getElementById('modal-wrap').classList.add('open');
+}
+
+function replaceWithFav(fi) {
+  currentPlan[modalTarget[0]].exercises[modalTarget[1]] = favorites[fi];
+  renderPlan();
+  closeModalDirect();
+}
+
+function closeModalBg(e) {
+  if (e.target === document.getElementById('modal-wrap')) closeModalDirect();
+}
+
+function closeModalDirect() {
+  document.getElementById('modal-wrap').classList.remove('open');
+}
+
+function renderFavList() {
+  var el = document.getElementById('fav-list');
+  if (favorites.length === 0) {
+    el.innerHTML = '<div class="empty">Noch keine Favoriten.<br>Tippe im Trainingsplan auf den Stern bei einer Ubung.</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < favorites.length; i++) {
+    html += '<div class="fav-item">';
+    html += '<div class="fav-body">';
+    html += '<div class="fav-name">' + favorites[i].name + '</div>';
+    html += '<div class="fav-meta">' + favorites[i].meta + ' - ' + favorites[i].ages.join(', ') + '</div>';
+    html += '</div>';
+    html += '<button class="fav-rm" onclick="removeFav(' + i + ')">&#x2715;</button>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function removeFav(i) {
+  favorites.splice(i, 1);
+  saveFavs();
+  renderFavList();
+  renderPlan();
+}
+
+function showPage(p) {
+  var pages = document.querySelectorAll('.page');
+  var tabs = document.querySelectorAll('.tab');
+  for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+  document.getElementById('page-' + p).classList.add('active');
+  if (p === 'plan') tabs[0].classList.add('active');
+  else { tabs[1].classList.add('active'); renderFavList(); }
+}
+
+function resetForm() {
+  document.getElementById('output').classList.remove('visible');
+  document.getElementById('form-card').style.display = 'block';
+  currentPlan = [];
+}
+
+updateFavCount();
+</script>
+</body>
+</html>
